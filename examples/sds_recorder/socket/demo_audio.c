@@ -26,24 +26,25 @@
 
 #include "audio_drv.h"
 
+#include "EventRecorder.h"
 
 // Configuration
 #ifndef REC_BUF_SIZE
-#define REC_BUF_SIZE            65536U
+#define REC_BUF_SIZE            512*1024U
 #endif
 #ifndef REC_IO_THRESHOLD
-#define REC_IO_THRESHOLD        4096
+#define REC_IO_THRESHOLD        16*1024
 #endif
 #ifndef MICROPHONE_BLOCK_NUM
 #define MICROPHONE_BLOCK_NUM    32U      // must be 2^n 
 #endif
 #ifndef MICROPHONE_BLOCK_SIZE
-#define MICROPHONE_BLOCK_SIZE   4096
+#define MICROPHONE_BLOCK_SIZE   16*1024
 #endif
 
 #define MICROPHONE_CHANNELS     1U
 #define MICROPHONE_DATA_BITS    16U
-#define MICROPHONE_SAMPLE_RATE  8000U
+#define MICROPHONE_SAMPLE_RATE  32000U
 
 // Recorder identifier
 static sdsRecId_t recId = NULL;
@@ -74,6 +75,7 @@ static __NO_RETURN void microphone (void *argument) {
 
   for (;;) {
     flags = osThreadFlagsWait(EVENT_DATA_MICROPHONE, osFlagsWaitAny, osWaitForever);
+    EventStartB(1);
     if ((flags & osFlagsError) == 0U) {
       tick = osKernelGetTickCount();
       count = AudioDrv_GetRxCount();
@@ -89,14 +91,17 @@ static __NO_RETURN void microphone (void *argument) {
         }
       }
     }
+    EventStopB(1);
   }
 }
 
 // Microphone event callback 
 static void microphone_event_callback (uint32_t event) {
+  EventStopA(1);
   if ((event & AUDIO_DRV_EVENT_RX_DATA) != 0U) {
     osThreadFlagsSet(thrId_microphone, EVENT_DATA_MICROPHONE);
   }
+  EventStartA(1);
 }
 
 // Recorder event callback

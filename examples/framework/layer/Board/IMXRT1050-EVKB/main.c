@@ -26,9 +26,8 @@
 #ifdef    CMSIS_shield_header
 #include  CMSIS_shield_header
 #endif
-#ifdef RTE_Compiler_EventRecorder
 #include "EventRecorder.h"
-#endif
+
 
 #include "clock_config.h"
 #include "board.h"
@@ -99,11 +98,11 @@ int main (void) {
   shield_setup();
 #endif
 
-#if defined(RTE_Compiler_EventRecorder) && \
-    (defined(__MICROLIB) || \
-    !(defined(RTE_CMSIS_RTOS2_RTX5) || defined(RTE_CMSIS_RTOS2_FreeRTOS)))
+//#if defined(RTE_Compiler_EventRecorder) && \
+//    (defined(__MICROLIB) || \
+//    !(defined(RTE_CMSIS_RTOS2_RTX5) || defined(RTE_CMSIS_RTOS2_FreeRTOS)))
   EventRecorderInitialize(EventRecordAll, 1U);
-#endif
+//#endif
 
   osKernelInitialize();                 // Initialize CMSIS-RTOS2
   app_initialize();                     // Initialize application

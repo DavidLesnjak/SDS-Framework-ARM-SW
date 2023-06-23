@@ -30,7 +30,7 @@
 
 //   <o>Maximum size of a record
 //   <i>Default: 8192
-#define SDS_REC_MAX_RECORD_SIZE   65536U
+#define SDS_REC_MAX_RECORD_SIZE   512*1024
 
 // </h>
 
