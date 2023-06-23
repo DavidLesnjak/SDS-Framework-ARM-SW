@@ -26,6 +26,9 @@ project:
     - group: Source Files
       files:
         - file: ./demo.c
+          not-for-context: +IMXRT1050-EVKB
+        - file: ./demo_audio.c
+          for-context: +IMXRT1050-EVKB
 
   layers:
     - layer: $Socket-Layer$

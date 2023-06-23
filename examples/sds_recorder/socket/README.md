@@ -1,16 +1,18 @@
 # SDS Recorder Example
 
-This project shows how to use **Synchronous Data Stream Recorder** via Socket (IoT Socket). The application reads sensors and records the sensor data to a file on the host PC. Push button (vioBUTTON0) starts and stops the operations.
+This project shows how to use **Synchronous Data Stream Recorder** via Socket (IoT Socket). The application reads sensors (for B-U585I-IOT02A and AVH_MPS3_Corstone-300 targets) or microphone (for IMXRT1050-EVKB target) and records the sensor data to a file on the host PC. Push button (vioBUTTON0) starts and stops the operations.
 
 Available targets:
  - B-U585I-IOT02A: runs on STMicroelectronics B-U585I-IOT02A board
  - AVH_MPS3_Corstone-300: runs on Arm Virtual Hardware (AVH) for MPS3 platform with Corstone-300
    >Note: AVH reads accelerometer data from files on the host PC (previously recorded)
+ - IMXRT1050-EVKB: runs on NXP IMXRT1050-EVKB board
 
 ## Prerequisites
 
 ### Hardware:
  - [B-U585I-IOT02A Discovery kit](https://www.st.com/en/evaluation-tools/b-u585i-iot02a.html) from STMicroelectronics
+ - [IMXRT1050-EVKB](https://www.nxp.com/design/development-boards/i-mx-evaluation-and-development-boards/i-mx-rt1050-evaluation-kit:MIMXRT1050-EVK) from NXP
 
 ### Tools:
  - [CMSIS-Toolbox 2.0.0](https://github.com/Open-CMSIS-Pack/cmsis-toolbox/releases/) or later
@@ -62,3 +64,12 @@ VHT_MPS3_Corstone_SSE-300 -f ../../framework/layer/Board/AVH_MPS3_Corstone-300/f
    to start/stop reading sensor data
    >Note: The recordings start with index 0 and increment for each subsequent start/stop.
  - sensor data is recorded to files `<sensor>.<index>.sds` on the host PC.
+
+ ### IMXRT1050-EVKB target
+ - connect the board's DAPLink USB to the PC (provides also power)
+ - use a programmer to download the HW image to the hardware target
+ - open terminal on the PC and connect to the board's serial port (Baud rate: 115200)
+ - reset the target (press RST button on the board)
+ - press USER (vioBUTTON0) button to start/stop reading and recording sensor data
+   >Note: The recordings start with index 0 and increment for each subsequent start/stop.
+ - sensor data is recorded to files `Microphone.<index>.sds` on the host PC.

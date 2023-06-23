@@ -201,6 +201,7 @@
       <example name="SDS Recorder" folder="examples/sds_recorder/vcom/mdk" doc="README.md">
       <description>Example shows usage of SDS Recorder via USB Virtual COM Port (Keil::USB:Device:CDC)</description>
       <board name="B-U585I-IOT02A" vendor="STMicroelectronics"/>
+      <board name="EVKB-IMXRT1050_MDK" vendor="NXP"/>
       <project>
         <environment name="cmsis" load="SDS_Recorder.csolution.yml"/>
       </project>
