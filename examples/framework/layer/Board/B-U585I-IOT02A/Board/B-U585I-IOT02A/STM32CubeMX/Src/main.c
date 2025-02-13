@@ -37,12 +37,6 @@
 #include "GPIO_STM32U5xx.h"
 #include "WiFi_EMW3080.h"
 
-#include "b_u585i_iot02a_env_sensors.h"
-#include "b_u585i_iot02a_motion_sensors.h"
-#include "b_u585i_iot02a_usbpd_pwr.h"
-#include "ism330dhcx.h"
-
-ISM330DHCX_Object_t ISM330DHCX_Obj;
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -137,7 +131,7 @@ uint32_t HAL_GetTick (void) {
     return ((uint32_t)osKernelGetTickCount());
   }
 
-  /* If Kernel is not running wait approximately 1 ms then increment 
+  /* If Kernel is not running wait approximately 1 ms then increment
      and return auxiliary tick counter value */
   for (i = (SystemCoreClock >> 14U); i > 0U; i--) {
     __NOP(); __NOP(); __NOP(); __NOP(); __NOP(); __NOP();
@@ -150,7 +144,7 @@ uint32_t HAL_GetTick (void) {
   * Override default HAL_InitTick function
   */
 HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority) {
-  
+
   UNUSED(TickPriority);
 
   return HAL_OK;
@@ -191,49 +185,6 @@ void USBH_VbusOnOff (bool vbus) {
   }
 }
 #endif
-
-/**
-  * BSP Sensor Init
-  */
-static void BSP_SENSOR_Init (void) {
-  ISM330DHCX_IO_t IOCtx;
-
-  BSP_ENV_SENSOR_Init(0U, ENV_TEMPERATURE);
-  BSP_ENV_SENSOR_Init(0U, ENV_HUMIDITY);
-  BSP_ENV_SENSOR_Init(1U, ENV_PRESSURE);
-#ifndef RTE_VIO_BOARD
-  BSP_MOTION_SENSOR_Init(0U, MOTION_ACCELERO);
-  BSP_MOTION_SENSOR_Init(0U, MOTION_GYRO);
-  BSP_MOTION_SENSOR_Init(1U, MOTION_MAGNETO);
-#endif
-  BSP_ENV_SENSOR_Disable(0U, ENV_TEMPERATURE);
-  BSP_ENV_SENSOR_Disable(0U, ENV_HUMIDITY);
-  BSP_ENV_SENSOR_Disable(1U, ENV_PRESSURE);
-  BSP_MOTION_SENSOR_Disable(0U, MOTION_ACCELERO);
-  BSP_MOTION_SENSOR_Disable(0U, MOTION_GYRO);
-  BSP_MOTION_SENSOR_Disable(1U, MOTION_MAGNETO);
-
-  IOCtx.BusType     = ISM330DHCX_I2C_BUS;
-  IOCtx.Address     = ISM330DHCX_I2C_ADD_H;
-  IOCtx.Init        = BSP_I2C2_Init;
-  IOCtx.DeInit      = BSP_I2C2_DeInit;
-  IOCtx.ReadReg     = BSP_I2C2_ReadReg;
-  IOCtx.WriteReg    = BSP_I2C2_WriteReg;
-  IOCtx.GetTick     = BSP_GetTick;
-
-  ISM330DHCX_RegisterBusIO (&ISM330DHCX_Obj, &IOCtx);
-  ISM330DHCX_Init(&ISM330DHCX_Obj);
-
-  ISM330DHCX_ACC_SetFullScale(&ISM330DHCX_Obj, ISM330DHCX_2g);
-  ISM330DHCX_ACC_SetOutputDataRate(&ISM330DHCX_Obj, 1666.0f);
-  ISM330DHCX_FIFO_ACC_Set_BDR(&ISM330DHCX_Obj, 1666.0f);
-
-  ISM330DHCX_GYRO_SetFullScale(&ISM330DHCX_Obj, ISM330DHCX_2000dps);
-  ISM330DHCX_GYRO_SetOutputDataRate(&ISM330DHCX_Obj, 1666.0f);
-  ISM330DHCX_FIFO_GYRO_Set_BDR(&ISM330DHCX_Obj, 1666.0f);
-
-  ISM330DHCX_FIFO_Set_Mode(&ISM330DHCX_Obj, ISM330DHCX_STREAM_MODE);
-}
 
 #ifdef CMSIS_shield_header
 __WEAK int32_t shield_setup (void) {
@@ -301,9 +252,6 @@ int main(void)
 #ifdef RTE_VIO_BOARD
   vioInit();
 #endif
-
-  BSP_SENSOR_Init();
-
   /* PG15 Pin (WRLS_FLOW) */
   Driver_GPIO0.Setup          (GPIO_PORTG(15U), WiFi_EMW3080_Pin_FLOW_Event);
   Driver_GPIO0.SetEventTrigger(GPIO_PORTG(15U), ARM_GPIO_TRIGGER_RISING_EDGE);

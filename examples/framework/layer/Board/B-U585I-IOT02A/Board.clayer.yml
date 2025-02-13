@@ -110,9 +110,9 @@ layer:
 
     - component: Keil::CMSIS Driver:SPI
     - component: Keil::CMSIS Driver:USART
-    - component: Keil::CMSIS Driver:USB Device
+    - component: Keil::CMSIS Driver:USB Device:Full-speed
     # - component: Keil::CMSIS Driver:VIO
-    - component: Keil::CMSIS Driver:WiFi:EMW3080
+    - component: Keil::CMSIS Driver:WiFi:EMW3080&SPI
 
     - component: ARM::CMSIS Driver:VIO:Custom
 
@@ -136,9 +136,8 @@ layer:
       files:
         - file: ../../../interface/audio/include/audio_drv.h
         - file: ../../../interface/sensor/include/sensor_drv.h
-        - file: ../../../interface/sensor/source/sensor_drv.c
-        - file: ./Driver/sensor_config.h
-        - file: ./Driver/sensor_drv_hw.c
+        - file: ./Driver/Sensor_B-U585I-IOT02A.c
+        - file: ./Driver/Sensor_B-U585I-IOT02A.h
         - file: ./Driver/Audio_B-U585I-IOT02A.c
         - file: ./Driver/ism330dhcx_fifo.c
         - file: ./Driver/vio_B-U585I-IOT02A.c

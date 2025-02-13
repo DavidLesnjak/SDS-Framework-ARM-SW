@@ -24,7 +24,7 @@
 
 #include "sds.h"
 #include "sensor_drv.h"
-#include "sensor_config.h"
+// #include "sensor_config.h"
 
 // Configuration
 #ifndef SDS_BUF_SIZE_ACCELEROMETER
@@ -48,11 +48,10 @@
 
 #define ACCELEROMETER_ABSOLUTE_LIMIT    (((double)INT16_MAX / (double)ACCELEROMETER_FULL_SCALE) * (1.0 + ((double)MOTION_DETECTION_SENSITIVITY_mG / 1000.0)))
 
-// Sensor identifier
-static sensorId_t sensorId_accelerometer;
-
-// Sensor configuration
-static sensorConfig_t *sensorConfig_accelerometer;
+// Accelerometer
+extern SensorDrv_t SensorDrv_Accelerometer;
+static SensorDrv_t *pAcc = &SensorDrv_Accelerometer;
+static SensorDrv_Info_t *pAcc_info;
 
 // SDS identifier
 static sdsId_t sdsId_accelerometer;
@@ -75,13 +74,12 @@ static __NO_RETURN void read_sensors (void *argument) {
 
   tick = osKernelGetTickCount();
   for (;;) {
-    num = sizeof(sensorBuf) / sensorConfig_accelerometer->sample_size;
-    num = sensorReadSamples(sensorId_accelerometer, num, sensorBuf, sizeof(sensorBuf));
+    num = pAcc->Read(sensorBuf, sizeof(sensorBuf));
     if (num != 0U) {
-      buf_size = num * sensorConfig_accelerometer->sample_size;
+      buf_size = num;
       num = sdsWrite(sdsId_accelerometer, sensorBuf, buf_size);
       if (num != buf_size) {
-        printf("%s: SDS write failed\r\n", sensorConfig_accelerometer->name);
+        printf("%s: SDS write failed\r\n", pAcc_info->name);
       }
     }
     tick += SENSOR_POLLING_INTERVAL;
@@ -102,7 +100,7 @@ static void sds_event_callback (sdsId_t id, uint32_t event, void *arg) {
 
 // Sensor Demo
 static __NO_RETURN void demo (void *argument) {
-  uint32_t  n, num, flags;
+  uint32_t  n, num, sample_size, flags;
   uint32_t  alloc_buf[2];
   int16_t  *buf;
   double    abs;
@@ -114,11 +112,11 @@ static __NO_RETURN void demo (void *argument) {
 
   thrId_demo = osThreadGetId();
 
-  // Get sensor identifier
-  sensorId_accelerometer = sensorGetId("Accelerometer");
+  // Initialize Accelerometer
+  pAcc->Initialize(NULL, 0);
 
   // Get sensor configuration
-  sensorConfig_accelerometer = sensorGetConfig(sensorId_accelerometer);
+  pAcc_info = pAcc->GetInfo();
 
   // Open SDS
   sdsId_accelerometer = sdsOpen(sdsBuf_accelerometer,
@@ -128,12 +126,15 @@ static __NO_RETURN void demo (void *argument) {
   // Register SDS events
   sdsRegisterEvents(sdsId_accelerometer, sds_event_callback, SDS_EVENT_DATA_HIGH, NULL);
 
-  // Enable sensor
-  sensorEnable(sensorId_accelerometer);
-  printf("Accelerometer enabled\r\n");
+  // Accelerometer capture start
+  pAcc->CaptureStart();
+  printf("Accelerometer capture started\r\n");
 
   // Create sensor thread
   osThreadNew(read_sensors, NULL, NULL);
+
+  // Sample size
+  sample_size = SENSOR_DRV_DATA_SIZE(pAcc_info->data_type) * pAcc_info->channels;
 
   for(;;) {
     flags = osThreadFlagsWait(EVENT_DATA_ACCELEROMETER, osFlagsWaitAny, osWaitForever);
@@ -142,9 +143,9 @@ static __NO_RETURN void demo (void *argument) {
       // Accelerometer data event
       if ((flags & EVENT_DATA_ACCELEROMETER) != 0U) {
         abs_max = 0.0;
-        for (n = SDS_THRESHOLD_ACCELEROMETER / sensorConfig_accelerometer->sample_size; n != 0U; n--) {
-          num = sdsRead(sdsId_accelerometer, buf, sensorConfig_accelerometer->sample_size);
-          if (num == sensorConfig_accelerometer->sample_size) {
+        for (n = SDS_THRESHOLD_ACCELEROMETER / sample_size; n != 0U; n--) {
+          num = sdsRead(sdsId_accelerometer, buf, sample_size);
+          if (num == sample_size) {
             // Calculate absolute value of accelerometer vector
             abs = sqrt((buf[0] * buf[0]) + (buf[1] * buf[1]) + (buf[2] * buf[2]));
 

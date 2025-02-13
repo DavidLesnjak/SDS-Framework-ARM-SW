@@ -36,7 +36,7 @@
 
 #define SAMPLE_SIZE            6U
 
-extern ISM330DHCX_Object_t ISM330DHCX_Obj;
+extern void *Motion_Sensor_CompObj[];
 
 /// Buffer control Block
 typedef struct {
@@ -154,27 +154,26 @@ uint32_t ISM330DHCX_FIFO_Read (uint32_t id, uint32_t num_samples, uint8_t *buf) 
   }
   if ((buf == NULL) || (num_samples == 0U)) {
     err = -1;
-  }  
+  }
   cb = &ism330dhcx_cb[id];
   if (cb->buf_cb == NULL) {
     err = -1;
   }
 
-  
   if (err == 0) {
     num = Buffer_Read(cb, buf, num_samples * SAMPLE_SIZE) / SAMPLE_SIZE;
 
     if (num < num_samples) {
 
       // Get FIFO overrun status
-      ctx = &ISM330DHCX_Obj.Ctx;
+      ctx = &(((ISM330DHCX_Object_t *)Motion_Sensor_CompObj[0])->Ctx);
       if (ctx->read_reg(ctx->handle, ISM330DHCX_FIFO_STATUS2, &status, 1) == 0) {
         if (((status >> 3) & 1U) == 1U) {
 //          printf("ERROR: FIFO overrun\r\n");
         }
       }
 
-      if (ISM330DHCX_FIFO_Get_Num_Samples(&ISM330DHCX_Obj, &cnt) == 0) {
+      if (ISM330DHCX_FIFO_Get_Num_Samples(Motion_Sensor_CompObj[0], &cnt) == 0) {
         // FIFO WORD = 7bytes = tag + sample(6bytes)
         cnt *= 7U;
         if (cnt > sizeof(buf_fifo)) {
@@ -182,7 +181,6 @@ uint32_t ISM330DHCX_FIFO_Read (uint32_t id, uint32_t num_samples, uint8_t *buf) 
           // cnt must be multiple of 7
           cnt = (cnt / 7) * 7;
         }
-        ctx = &ISM330DHCX_Obj.Ctx;
         if (ctx->read_reg(ctx->handle, ISM330DHCX_FIFO_DATA_OUT_TAG, buf_fifo, cnt) == 0) {
           for (idx = 0U; idx < cnt; idx += 7) {
             tag = buf_fifo[idx] >> 3;
